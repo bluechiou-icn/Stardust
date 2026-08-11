@@ -1,6 +1,6 @@
 # AGENT_STATUS.md — ÆTHNOUS Project Network
 
-**Compiled:** 2026-07-23 · **Last updated:** 2026-08-06（移除背景推播 periodicsync） · **Compiled by:** Claude (session `project-status-compilation`) · **For:** any AI agent (Claude, Gemini, ChatGPT, or other) picking up work in this repo or a sibling repo
+**Compiled:** 2026-07-23 · **Last updated:** 2026-08-11（移除天文知識測驗、首頁 Duolingo 連續紀錄火焰、功能顯示設定） · **Compiled by:** Claude (session `project-status-compilation`) · **For:** any AI agent (Claude, Gemini, ChatGPT, or other) picking up work in this repo or a sibling repo
 
 This file is a handoff briefing so any AI agent landing in *any* of Blue's repos with no other context can quickly understand who they're working for, what the whole project network looks like, which rules hold everywhere, and exactly where this repo stands right now. **This repo has no `CLAUDE.md` yet** (see the note at the end of section 4) — until one exists, this file is the only written orientation document here. Update it whenever this repo's status changes materially.
 
@@ -262,6 +262,36 @@ Blue 的指示很明確：關掉任何「App 沒開就跳出」的推播。處�
 README 已經寫的「真正的伺服器推播」路線（VAPID + 訂閱清單 + 使用者明確同意 + 可退訂），
 讓使用者自己選擇要不要收，不要重新做成使用者沒同意就會背景跳出的通知。
 
+### 2026-08-11 — 移除天文知識測驗、首頁 Duolingo 連續紀錄火焰、功能顯示設定
+
+三項改動，都在 `claude/settings-feature-toggle-streak-6oa79n`；起因是使用者回饋「App 內
+功能太多、太複雜」，希望能自訂顯示／隱藏功能，並把成就感做得更明顯。
+
+1. **移除「宇宙知識問答測驗」**。整組拿掉：`QUIZ_BANK`（26 題）、`renderCosmosQuiz`／
+   `drawQuiz`／`drawQuizResult`、`quizState`／`bumpQuizStreak`／`quizStreakHTML` 等連續
+   參加獎勵函式，以及 `COSMOS_SUBS` 裡的 `quiz` 子分頁與 `renderCosmos()` 的對照表登記。
+   宇宙分頁從五個子分頁縮成四個（`天象｜專欄｜新聞｜知識`）。舊的兩種測驗獎勵（每天第一次
+   全對給碎片、連續參加滿 7 天給召喚機會）一併移除，`.quiz-*`／`.qs-*` CSS 也清掉。
+
+2. **首頁 Duolingo 式連續紀錄火焰**。問候卡下方固定一張連續紀錄卡（`recordStreakHTML()`）：
+   大火焰＋連續天數＋最近七天火焰格。連續天數沿用既有的 `calcStreak()`（任何一種紀錄都算
+   今天有來），並抽出 `recordDateSet()` 給卡片與火焰格共用；**順手修掉一個舊行為**——
+   `calcStreak()` 以前今天還沒記錄就把連續天數直接歸零，改成今天沒記錄時先從昨天起算
+   （Duolingo 也是撐到當天結束才算斷），數字整天穩定、今天一記錄就補回今天。獎勵沿用既有的
+   `SUMMON_PER_STREAK_DAYS`（連續紀錄滿 X 天換一次召喚機會），卡片顯示還差幾天，把「連續
+   天數 → 召喚獎勵」串成一條清楚的成就線。原本問候卡那行純文字 `🔥 連續紀錄 X 天` 收掉。
+
+3. **功能顯示設定**（`settings.tabsOff` + `NAV_TABS` + `applyTabVisibility()`）。設定分頁新增
+   「🧭 功能顯示」卡，讓使用者把用不到的底部分頁收起來（例如對宇宙新聞沒興趣就隱藏宇宙）。
+   首頁與設定是 `fixed: true` 永遠保留（一個是主畫面，一個是回來重新打開其他功能的入口）。
+   只隱藏底部按鈕，view 與程式內部跳轉不受影響。
+
+`APP_VERSION` → `2026.08.11`、`sw.js` 的 `CACHE` → `dreamtide-v25-2026.08.11`。
+驗證方式：本機起靜態伺服器用 headless Chromium（412px）跑過——首頁連續紀錄卡正確顯示連續
+3 天、七格中三格點亮、今天有金框、火焰點亮、獎勵文案正確；宇宙只剩四個子分頁；設定的功能
+顯示七項可勾（不含首頁／設定）；勾掉宇宙後底部分頁列即時少一顆、`tabsOff` 有寫進去；全程
+無 App 端 JS 錯誤。
+
 ### Open / unfinished work
 `docs/crystal-vision.md` is a de facto product roadmap, with v1 marked shipped:
 - **v1.5 (next):** collection achievement badges, a shareable collection poster (canvas → PNG export), full-moon cleansing push notifications (reusing the existing `sw.js` notification pipeline).
@@ -278,8 +308,10 @@ README 已經寫的「真正的伺服器推播」路線（VAPID + 訂閱清單 +
 `main`, `claude/moon-altar-account-system-op2yvx` (altar backgrounds, meteor tuning, 星塵帳號,
 install button), `claude/stardust-fullmoon-article-translation-311edj` (星塵專欄創刊, true
 syzygy times, 站內通報 — see the 2026-07-28 entry above), and
-`claude/moon-phases-dynamic-feature-m7jb2y` (動態月相抽屜 — see the entry above). The earliest
-branch, `claude/crystal-knowledge-collection-jcgq14`, is already merged via PR #1.
+`claude/moon-phases-dynamic-feature-m7jb2y` (動態月相抽屜 — see the entry above), and
+`claude/settings-feature-toggle-streak-6oa79n` (移除測驗、首頁連續紀錄火焰、功能顯示設定 —
+see the 2026-08-11 entry above). The earliest branch,
+`claude/crystal-knowledge-collection-jcgq14`, is already merged via PR #1.
 
 ---
 
