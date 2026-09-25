@@ -1,0 +1,325 @@
+> 封存 2026-09-25｜原因：AGENT_STATUS.md 瘦身，2026-07-23～2026-08-11 的開發紀錄移出｜被 `AGENT_STATUS.md`（2026-09-25 版）與 `CLAUDE.md` 取代。唯讀，不照著做事。
+
+# AGENT_STATUS.md — ÆTHNOUS Project Network
+
+**Compiled:** 2026-07-23 · **Last updated:** 2026-08-11（移除天文知識測驗、首頁 Duolingo 連續紀錄火焰、功能顯示設定） · **Compiled by:** Claude (session `project-status-compilation`) · **For:** any AI agent (Claude, Gemini, ChatGPT, or other) picking up work in this repo or a sibling repo
+
+This file is a handoff briefing so any AI agent landing in *any* of Blue's repos with no other context can quickly understand who they're working for, what the whole project network looks like, which rules hold everywhere, and exactly where this repo stands right now. **This repo has no `CLAUDE.md` yet** (see the note at the end of section 4) — until one exists, this file is the only written orientation document here. Update it whenever this repo's status changes materially.
+
+## 1. Who you're working for
+
+**Blue Chiou** (bluechiou@gmail.com, commits as "Blue.X") is the founder and sole owner-operator of **ÆTHNOUS**, a Zi Wei Dou Shu (紫微斗數 / Purple Star Astrology) chart-reading brand that blends the 占驗派 tradition with Jungian depth psychology, plus a small portfolio of side products (of which this repo is one). Blue builds everything through AI-assisted development (primarily Claude Code) and does not have a formal software-engineering background — explain tradeoffs plainly, don't assume prior engineering context, and default to asking rather than guessing on anything ambiguous or high-stakes.
+
+Blue runs work through named AI agent personas, each with its own skill file:
+- **Raziel (密典)** — Chief Technical Executor: engineering, deploys, API/security architecture. Loaded via the `raziel` skill / `RAZIEL_SKILL.md` (canonical copy lives in Google Drive, not git — see IP rules below).
+- **Cassian (紫曜)** — Head Analyst: ZWDS chart reading, synastry, flow-year/decade prediction, four-transformations analysis. Runs the 汎天派 (Fan Tian Pai) school in its v3-Ultra form.
+- Other named collaborators referenced in skill/commit history: **Gabriel**, **Uriel**, **Vergil**, **Thoth**, **Raphael**.
+
+If you're an agent on another platform (Gemini, ChatGPT, etc.) without access to these skill files, ask Blue for the relevant one rather than improvising the persona.
+
+## 2. The ÆTHNOUS project network (7 repos)
+
+| Repo | What it is | Production | Snapshot |
+|---|---|---|---|
+| **Blue_Astral_Nexus_Engine** | Core ZWDS calculation engine + API (`chart-api.js`), extends `iztro` with Blue's corrected 四化/亮度/宮名 rules | engine.aethnous.co (API), chart.aethnous.co (UI) | Active — formation catalog + monetization infra + EN-market prep |
+| **Blue_ANE_Owner_Ext** | Private owner-only extension: proprietary reading-lens + Tier-2 judgment-rule bundle, pulled into the Engine at build time | (bundled into engine.aethnous.co for Blue only) | Active — category/filter UI hardened, Tier-2 daily-fortune generator mid-calibration |
+| **Blue-Booking** | Booking + member portal + CRM for the consultation service (Cloudflare Workers + D1 + R2), vendors a copy of the Engine | booking.bluechiou.com | Active — just shipped a large `/gate` 3D landing experience |
+| **Blue-OS** | Claude Code dashboard/control panel, runs on Blue's Mac, phone-reachable PWA | localhost:4173 (Blue's Mac) | Stable/idle — booking subsystem just split out to its own repo |
+| **aethnous-landing** | Public ÆTHNOUS marketing/landing site, Next.js (customized build) + Three.js solar-system hero | (Vercel, ÆTHNOUS domain) | Active — building EN-market acquisition funnel (`/start`, `/quiz`) |
+| **stardust** (this repo) | 星塵夢汐 Stardust DreamTide — separate wellness/journaling PWA (mood tracking, AI companion, crystal encyclopedia) | stardust.bluechiou.com | Active, brand-new — v1 just shipped, v1.5+ roadmapped |
+| **Blue-Bubble-Buddy** | Portable Claude Code skill library (17 skills) teaching engineering discipline to other AI agents/smaller models | (skill library, no deployment) | Active — STATE.md current (2026-07-27); newest skill `bbb-knowledge-graph` wraps the third-party graphify CLI as an optional onboarding accelerator |
+
+This repo split out of a `Blue-essay-Jung` repo's `app/` directory on 2026-07-16 (that repo reverted to being a psychology-research-paper project and is out of scope for this compilation). It's the one repo in the network **not** branded ÆTHNOUS — it's a separate wellness product under the same owner.
+
+## 3. Rules that hold across the network
+
+Compiled from the other six repos' `CLAUDE.md` files — this repo doesn't have one yet, so nothing here is locally authoritative until one is written (see §4). Treat these as strong defaults given how consistently they recur elsewhere in the network.
+
+- **Personal data never enters git.** Real birth data never enters git in the astrology repos (placeholder: `2000-01-01 06:00`). **The same principle applies here with extra force**: this app collects real user mood/journaling/dream content, which is at least as sensitive — real user emotional data must never be committed, logged in a way that lands in git, or pasted into docs/PRs.
+- **Secrets never hardcoded.** Use Vercel environment variables (this repo already uses `api/config.js` + serverless functions on Vercel, consistent with that pattern) — never hardcode the Anthropic API key or Notion sync credentials.
+- **Blue's Version is the single authority for ZWDS logic** in the astrology repos — relevant here only if/when the roadmapped "destiny crystal report" (v2.5, see below) integrates with the Engine.
+- **IP boundaries are release blockers** elsewhere in the network (agent skill files, Owner-Ext proprietary content) — apply the same caution if this repo ever imports ÆTHNOUS chart logic for the v2.5 integration.
+- **Surgical changes only, everywhere.** State a verifiable success criterion before coding starts.
+- **Self-scheduled check-ins may only be armed when they'll deliver genuinely new value** (network-wide convention, stated explicitly in the Engine repo's CLAUDE.md). **This is now enforced, not just advisory**: after an incident (2026-07-29) where a self-perpetuating `send_later` re-check loop for a PR burned ~12% of a week's usage overnight with no user request, `.claude/settings.json` in this repo `deny`-lists every scheduling / notification entry point that could arm the same loop under a new name — `mcp__Claude_Code_Remote__send_later`, `mcp__Claude_Code_Remote__create_trigger`, `mcp__Claude_Code_Remote__fire_trigger`, `mcp__Claude_Code_Remote__update_trigger`, `ScheduleWakeup`, `CronCreate`, and `PushNotification` — outright. Do not remove any of these deny rules to "just do one quick re-check" or "just ping the user once" — if a PR genuinely needs monitoring, use `subscribe_pr_activity` (event-driven, no polling) instead; for anything else, wait for the user to ask again.
+
+## 4. This repo: stardust
+
+### Purpose
+**星塵夢汐 Stardust DreamTide** (`stardust.bluechiou.com`) — a wellness/journaling PWA: CBT mood tracking (emotion + intensity), an "inner report," manifestation rituals, bedtime guidance, streak badges, an AI companion "夢汐" for chat and dream interpretation (via the Anthropic API), Notion sync, and a crystal encyclopedia (52 crystals with procedurally generated vintage-museum-style SVG illustrations) plus a virtual crystal shelf paired with moon-phase wishing rituals. Carries an explicit disclaimer that crystal effects are folk/energy tradition, not scientific or medical claims. Technically: a vanilla-JS static PWA (no build framework), Vercel serverless functions under `api/`. `package.json`: `stardust-dreamtide`, no version field, `private: true`, single dependency `@anthropic-ai/sdk`.
+
+### Current status: active, brand-new
+The app was migrated verbatim out of `Blue-essay-Jung`'s `app/` directory, then a large feature (crystal encyclopedia, virtual shelf, moon-phase pairing, 4 wish rituals — `crystals.js`, ~1,100 lines) shipped via PR #1 along with a planning doc, `docs/crystal-vision.md`.
+
+**2026-07-27 — real accounts landed.** The former "Email 註冊" was a placeholder: it wrote the
+email to `localStorage.settings.account` and posted it to a marketing list, so clearing browser
+data destroyed the account and there was no way to sign back in or recover anything. It has been
+replaced by **星塵帳號** (`account.js` + `api/account.js`): email + password, end-to-end encrypted
+sync backed by Upstash Redis. The client derives an AES-GCM key from the password
+(PBKDF2-SHA256, 200k) and uploads only ciphertext; the server receives a one-way `verifier`, never
+the password or the key, so **the backend cannot read anyone's dreams or moods** — which keeps the
+network-wide "personal data stays private" rule intact even though journals now leave the device.
+The key is never persisted, so reopening the app asks for the password once to unlock.
+Setup is two Vercel env vars (`ACCOUNT_KV_URL` / `ACCOUNT_KV_TOKEN`); unset → the feature reports
+`enabled:false` and the UI degrades to local + export. Full write-up: `docs/account-setup.md`.
+Trade-off to know about: no password reset is possible by design — forgetting the password means
+the cloud copy is unrecoverable (local data and JSON exports survive). Both sync blocks are
+labelled 測試中 and tell users to keep their own JSON exports.
+
+Also shipped that day: summon-altar backgrounds now rotate randomly through 30 moon-altar
+illustrations (`Moon_altar/` originals → `assets/altar/*.webp`, 1.6 MB PNG → ~75 KB each);
+meteor-shower easter egg retuned (3.3% appearance, 10s, skippable after 3s, 8% fragment drop);
+and the home tab gained an explicit "安裝 App" button because Chrome's automatic install prompt
+was not firing for users.
+
+### 2026-07-28 — 星塵專欄創刊 + 真實朔望演算法 + 站內通報
+Three connected changes, all on `claude/stardust-fullmoon-article-translation-311edj`:
+
+1. **星塵專欄 (Stardust Column)** — a new card on the 宇宙 tab holding Blue's own original
+   astronomy writing, kept in the `COLUMN` array and deliberately separate from `NEWS`
+   (the NASA feed in `api/space-news` overwrites `NEWS` wholesale, so a column entry placed
+   there would be washed away on the next fetch). Column entries set `bilingual: true` and
+   render through `openBilingualArticle()`: full Chinese first, then the full English
+   underneath in one scroll, no language toggle. First entry is Blue's 7/28 full-moon piece,
+   translated into British English for Blue to cross-post to social.
+2. **Moon phases now use true syzygy times** (Meeus, *Astronomical Algorithms* ch. 49) instead
+   of a fixed 29.53-day mean. The mean model put the July 2026 full moon on 7/30 for a Taipei
+   device; the true instant is 2026-07-29 22:35 Taiwan time. Dates are always derived in the
+   device's own time zone. Same code is mirrored in `sw.js` (kept in sync by hand, as before).
+   Knock-on fixes: illumination percentage is interpolated across the real 朔→望→朔 of the
+   current lunation (7/28 now reads 99%, not 100%); the calendar's new/full-moon outline
+   highlight starts on the day the phase actually occurs rather than the day after; and
+   `ASTRO_EVENTS`' December supermoon moved 12/23 → 12/24, which is the Taiwan date (the
+   Western-sourced 12/23 would otherwise have rendered as a second, contradictory full-moon row).
+3. **站內通報 (in-app broadcast)** — `BROADCASTS` in `app.js` + a matching `BROADCAST` constant
+   in `sw.js`. There is no Web Push server here and no push subscriptions are collected, so
+   delivery is two-track: installed Android PWAs that granted notifications get a background
+   system notification through the existing `periodicsync` pipeline; everyone else (including
+   all of iOS) sees a card the next time they open the app. Both routes end at the same claim
+   action, which grants one complete 神奇海螺 via `awardCompleteShell()` and writes the
+   broadcast id into `settings.broadcasts` so it never fires twice. The card waits for
+   `#book-landing` and any open modal to clear before showing — the 魔法書 opener is not a
+   `.modal-mask` and will otherwise swallow the taps.
+
+**If you want real server-sent push later**, that is a genuine build: VAPID keypair (private key
+as a Vercel env var, never in git), a subscription store in Upstash Redis alongside the existing
+account/board KV, an authenticated broadcast endpoint, `push`/`pushsubscriptionchange` handlers
+in `sw.js`, and a permission-request flow. Note iOS only delivers Web Push to PWAs installed to
+the home screen.
+
+### 2026-07-29 — 版本更新機制、SW fetch 修正、兩種新海螺
+
+**先記一件不是程式問題的事故。** 2026-07-28 兩個 PR（#15 #16）都正常合併並部署到
+production 之後，Blue 在 Vercel 後台對一個**舊的 deployment**按了 Redeploy（連按三次，
+16:33 / 16:37 / 16:43 UTC），把 production 別名指回 commit `19003c9`，於是線上跑的是
+專欄上線前的版本。表現出來就是「清除資料、移除重裝都還是舊的、沒有文章、沒有通知」。
+排查方式：抓 production 的 `app.js` 和每個 commit 逐一 diff，就能指認線上到底是哪一版。
+**要回到最新版，正確操作是對 main 最新的那個 deployment 按 Promote to Production，
+或直接讓 main 產生一個新 commit（合併任何 PR 都可以）；對舊 deployment 按 Redeploy
+等於回滾。**
+
+三項程式改動：
+
+1. **版本更新機制**（`APP_VERSION` + `initServiceWorker()`）。以前使用者無從得知自己在
+   哪一版，改版後也可能好幾天停在舊版。現在：設定分頁顯示版本號與一顆「立即檢查更新」；
+   啟動時與每次從背景回前景時主動 `reg.update()`（5 分鐘節流）；偵測到新版跳橫幅，
+   由使用者自己按下重載——不自動 reload，因為使用者可能正在打日記。
+   `hadController` 在註冊前先取值，否則首次安裝也會誤報有新版。
+   **關鍵實作細節：不要把邏輯掛在 `navigator.serviceWorker.register()` 的 promise 上。**
+   實測 Chromium 在「使用者回訪、頁面已被 SW 接管」時，那個 promise 會遲遲不 resolve
+   （5 秒仍 TIMEOUT），而 `navigator.serviceWorker.ready` 每次都即時回應。第一版就是踩到
+   這個坑，整套更新偵測形同不存在。
+
+2. **`sw.js` fetch handler 修正（真的 bug）**。舊版把**所有** GET 都攔下來，任何抓失敗的
+   請求一律回傳 `index.html`。於是第三方腳本（`accounts.google.com/gsi/client`）只要載入
+   失敗就會收到一坨 HTML，變成 `Uncaught SyntaxError: Unexpected token '<'`，而且會連帶
+   把 `register()` 卡住。現在：跨網域請求直接不接管；同網域抓不到時先找快取，只有
+   `request.mode === "navigate"` 才退回 `index.html`，其餘回 `Response.error()`。
+
+3. **兩種新的神奇海螺**：🚀 綜觀效應（深空稀有，權重 2）與 ⚫️ 克爾黑旋（事件視界・最罕見，
+   權重 1，全系列最罕見）。權重總和 106 → 五元素各 18.9%、量子糾纏 2.8%、綜觀效應 1.9%、
+   克爾黑旋 0.9%。稀有度字串改成資料驅動的 `rarity` 欄位，寶庫與召喚結果共用。
+
+驗證方式：本機起了一台 HTTPS 伺服器（service worker 只在安全環境運作），用 Chromium 跑
+完整情境——首次安裝不誤報、回訪不誤報、模擬上線新版本後切回前景跳出橫幅、按下更新後
+版本號確實變成新的、全程無 JS 錯誤。
+
+### 2026-07-29（續）— 宇宙分頁子分頁化 ＋ 知識問答測驗
+
+**宇宙分頁改成子分頁**：`天象｜專欄｜新聞｜知識｜測驗`，選擇記在
+`settings.cosmosSub`。做這個決定的原因是底部分頁列已經有九顆按鈕，加第十顆在手機上
+會擠到很難點；而專欄文章之後會越來越多，四張卡片一路往下疊等於把新聞和知識埋掉。
+`renderCosmos()` 現在只畫子分頁列，內容交給 `renderCosmosSky/Column/News/Know/Quiz`
+其中一個填進 `#cosmos-body`。站內通報的「領取並閱讀」會先把 `cosmosSub` 設成
+`column`，否則使用者關掉文章之後會落在天象頁，找不到剛剛那篇。
+
+**宇宙知識問答測驗**（`QUIZ_BANK`，26 題）：每輪隨機抽 5 題，選項連同「是不是正解」
+一起洗牌，所以背選項位置沒有用。每題都帶 `ref` 指向一篇既有的天文知識文章，答完可以
+直接跳去讀。獎勵刻意設得很克制——**每天「第一次」全對才給一片碎片**，其餘純練習；
+這樣一天最多多出一片，不會把召喚祭壇的經濟灌爆，但仍有回來玩的理由。
+統計存在 `settings.quiz`（plays / best / totalCorrect / totalAnswered / lastRewardDate）。
+
+題庫寫作原則：只寫查得到、站得住腳的天文事實。有一支檢查腳本驗過全部 26 題的
+id 唯一性、選項數、答案索引範圍、選項不重複、`ref` 都能對到真的文章、解析長度。
+其中兩題刻意呼應新加的海螺（綜觀效應 Overview Effect、克爾／史瓦西黑洞的差別）。
+
+### 2026-07-30 — 文案修訂、今日天象光暈、sticky 子分頁、IG、連續參加獎勵
+
+Blue 指定的七項。值得記下來的三件：
+
+1. **sticky 子分頁的定位基準**。子分頁列改成 `position: sticky`，`top` 用 `--header-h`，
+   由 `syncHeaderHeight()` 量標題列實際高度寫進 `:root`（並掛 resize）。原本寫死 52px，
+   實測標題列是 56px，會露出一條縫。字級、主題、瀏海都會改變那個高度，不要寫死。
+   同時拿掉切換子分頁時的 `scrollIntoView`——那會把整頁捲到最上面，子分頁列被推到標題列
+   底下，看起來像自動隱藏，正是 Blue 回報的問題。
+
+2. **今日天象的呼吸光暈**。`eventRowHTML()` 在 `dd === 0` 時加 `.today`，CSS 用
+   `ev-breathe` 3.4s 循環改變 border-color 與 box-shadow。`prefers-reduced-motion`
+   下關掉動畫但保留金色外框，仍看得出是今天。
+
+3. **連續參加獎勵**（Duolingo 式）。`bumpQuizStreak()`：完成一輪就算今天有參加，
+   **答對與否不影響**；滿 7 天送一次召喚機會。連續天數比對用 `yesterdayStr()`，
+   以日期元件往回推一天，不用毫秒相減——有日光節約時間的地區減 24 小時可能還停在同一天。
+   同日重複玩不會重複計數也不會重複發獎。首頁的 7 格連續紀錄由 `quizStreakDays()` 產生。
+
+另外新增 `docs/cycle-moon-vision.md`：生理期 × 月相共時性的設計規劃，**尚未實作**，
+等 Blue 確認文件第七節那四個問題再開工。該文件第零節把健康資料的處理界線先釘死了
+（預設關閉、只存本機、上雲一律 E2E 加密、絕不進任何 API、匯出預設排除、可整組刪除、
+不做醫療宣稱、不做安全期與避孕推算）。
+
+### 2026-07-30（續）— 動態月相抽屜（v2026.07.30b）
+
+Blue 平常用 Phases of the Moon 這支 App，最想要的是「一直在跳的距離數字」。本次把那件事做進來，
+但**沒有**開第十個分頁：底部分頁列已經九顆按鈕，第十顆在手機上會擠到很難點（宇宙分頁改子分頁
+就是為了這件事）。做法是**標題列右上那顆月亮＝收合狀態，點一下才從標題列底下滑出整片即時資料**，
+任何分頁都摸得到，關掉完全不佔版面——就是 Blue 說的「預設縮起、click 可展開」。
+
+三件值得記下來的事：
+
+1. **真的把月球軌道解出來了。** 原本的朔望演算法（Meeus 第 49 章）只回答「這一輪的朔與望是
+   哪一刻」，算不出「此刻月球離我們多遠」。新增 `moonPosition()`：Meeus 第 47 章
+   ELP-2000/82 截斷級數（60 項 Σl／Σr）＋短式黃緯級數，另加 `sunPosition()`（第 25 章）
+   算日月夾角。**驗證方式：拿書上第 47.a 例題（1992-04-12.0 TD）跑一次，黃經 133.162655°、
+   距離 368409.7 km，兩個數字跟書上印的完全一樣。** 月出時刻也對得上 Phases of the Moon
+   在 2026-07-29 三重顯示的 18:37。
+   要注意的是**這是地心距離**（地球中心↔月球中心），不是觀測者到月球；抽屜底部有一行說明。
+   順帶一提，該 App 的月齡（14.76 日）跟我們的（15.18 日）差約 9 小時，因為它用平均月長，
+   而我們用這一輪真實的朔；這正是 7/28 那次修掉的同一個問題，我們的比較準。
+
+2. **照度有兩套數字，是刻意的。** 首頁與標題列沿用 `moonInfo().illum`（整數，用真實朔→望→朔
+   內插），抽屜顯示 `(1+cos i)/2` 的幾何照度到小數第二位。實測 2026-07-29 22:10 兩者是
+   100% 與 99.97%，四捨五入後一致；相位「名稱」則一律取自 `moonInfo()`，避免同一顆月亮
+   在兩個地方叫不同名字。
+
+3. **標題列只剩幾個像素可以用。** 收合狀態加上 pill 內距與展開箭頭之後，主標題會被擠成兩行，
+   標題列從 56px 變 87px（`--header-h` 也跟著跳）。最後把字級收到 `.84rem`、內距 `1px 4px`、
+   分隔符從「・」改半形空白，412px 寬回到 56px，與改版前一致；390px 以下本來就會折行，沒有變差。
+   **改這顆按鈕的樣式時請一併量標題列高度**（`document.querySelector("header.app-header").offsetHeight`）。
+
+抽屜內容：即時時鐘、依真實明暗界線畫的月面 SVG（亮面＝半圓弧＋橢圓弧，短半徑 R×|cos 黃經差|，
+北半球視角）、距離（每 250ms 更新，並標示正在靠近／遠離與每分鐘公里數）、近地↔遠地位置條、
+照度／月齡／視直徑／黃道十二宮（回歸黃道），以及下次滿月、新月、換星座、近地點、遠地點五個
+倒數（依時間排序，到點會自己換下一輪）。計時器只在抽屜開著且 App 在前景時才跑
+（`visibilitychange` 會停表），關掉就清掉。
+
+**月出月沒是選擇性功能，預設關閉。** 要算它得知道使用者在哪裡，所以按了才問一次定位權限，
+而且座標**四捨五入到小數第二位（約 1 公里）**、單獨存在 `localStorage["dreamtide.geo"]`——
+刻意不放進 `store.data`，這樣它不會被 JSON 匯出帶走，也不會進星塵帳號的雲端同步，隨時可刪。
+這是照 `docs/cycle-moon-vision.md` 第零節那套健康資料界線的同一個原則處理位置資料。
+
+驗證方式：Chromium（412/390/360 三種寬度、深色與淺色、`prefers-reduced-motion`）跑過
+九個分頁全部重繪、抽屜開關三次無殘留計時器與節點、Escape 可關、換分頁自動收起、
+八個相位角的月面圖形逐一目視確認，全程無 JS 錯誤。
+
+### 2026-08-06 — 移除背景推播（periodicsync）
+
+Blue 回報「明明沒開 App 卻收到推播」（2026-08-05 晚間 ~18:xx），查明來源：`sw.js` 的
+`periodicsync` handler（`astro-check` tag，`app.js` 用 `reg.periodicSync.register(...,
+{ minInterval: 12h })` 註冊）會在 Chrome 自行排程的背景時刻檢查 `BROADCAST`／`ASTRO`
+並呼叫 `showNotification()`。這**不是** Claude Code agent 的自動排程復活（`.claude/settings.json`
+的 deny 清單管的是 agent session 能不能呼叫 `send_later`/`create_trigger` 這類工具，跟瀏覽器
+原生 Periodic Background Sync API 完全是兩個系統，deny 清單管不到已經部署在使用者手機上的
+`sw.js`），而是 App 自己 7/28 上線的既有功能：唯一能在 App 沒開時送達使用者的通知管道。
+根因是它**沒有真正的已讀判斷**——`app.js` 宣稱的「領過就不會再跳」寫進 `localStorage`
+的 `settings.broadcasts`，但 Service Worker 讀不到 `localStorage`，所以只要 Chrome 在
+`BROADCAST.until`（原設 2026-08-11）前的任何時刻喚醒背景排程，同一則通知就會重新跳出——
+這就是為什麼 Blue 說「已經收到自己做的程式發了七八次推播」。
+
+Blue 的指示很明確：關掉任何「App 沒開就跳出」的推播。處理方式是整支移除，不是修 dedupe：
+- `sw.js`：刪掉整個 `periodicsync` handler、其專用的月相/天象輔助函式（`truePhaseJDE`／
+  `phaseDate`／`kNear`／`upcomingWithin`／`ASTRO`／`BROADCAST`，這些只被這支 handler
+  用到，sw.js 別處沒有引用），以及跟著變成死碼的 `notificationclick` handler；`CACHE`
+  版號跟著跳（`v23-2026.07.30c` → `v24-2026.08.06`）讓瀏覽器裝新版 SW。
+- `app.js`：`periodicSync.register("astro-check", ...)` 改成 `periodicSync.unregister(
+  "astro-check")`，主動撤銷**已經在使用者裝置上跑著**的舊排程（光是這次不再註冊還不夠，
+  舊安裝的 tag 會留在瀏覽器裡繼續喚醒）；`APP_VERSION` 同步跳到 `2026.08.06`。
+- App 開啟時的通報卡片（`checkBroadcasts()`）與天象提醒（`checkEventNotifications()`）
+  維持原樣——它們只在使用者主動打開 App 時才跑，用的是前景 `new Notification()`，不會在
+  App 關閉時觸發，不在這次「未開 App 就推播」的問題範圍內。
+- 更新了 `README.md`「站內通報怎麼送達」一節與 `app.js:1053` 附近的說明註解，兩處都曾
+  宣稱背景推播「不會重複發」，現在已不再是事實，一併改寫。
+
+**如果之後要重做 v1.5 的「滿月淨化推播」**：不能再靠 `sw.js` 的 `periodicsync` 這條管線
+（已整支移除），且即使要重做背景推播也必須先在 Service Worker context 做真正的已讀判斷
+（例如寫 Cache API 或 IndexedDB，而不是假設能讀到 `localStorage`）。更穩妥的做法是走
+README 已經寫的「真正的伺服器推播」路線（VAPID + 訂閱清單 + 使用者明確同意 + 可退訂），
+讓使用者自己選擇要不要收，不要重新做成使用者沒同意就會背景跳出的通知。
+
+### 2026-08-11 — 移除天文知識測驗、首頁 Duolingo 連續紀錄火焰、功能顯示設定
+
+三項改動，都在 `claude/settings-feature-toggle-streak-6oa79n`；起因是使用者回饋「App 內
+功能太多、太複雜」，希望能自訂顯示／隱藏功能，並把成就感做得更明顯。
+
+1. **移除「宇宙知識問答測驗」**。整組拿掉：`QUIZ_BANK`（26 題）、`renderCosmosQuiz`／
+   `drawQuiz`／`drawQuizResult`、`quizState`／`bumpQuizStreak`／`quizStreakHTML` 等連續
+   參加獎勵函式，以及 `COSMOS_SUBS` 裡的 `quiz` 子分頁與 `renderCosmos()` 的對照表登記。
+   宇宙分頁從五個子分頁縮成四個（`天象｜專欄｜新聞｜知識`）。舊的兩種測驗獎勵（每天第一次
+   全對給碎片、連續參加滿 7 天給召喚機會）一併移除，`.quiz-*`／`.qs-*` CSS 也清掉。
+
+2. **首頁 Duolingo 式連續紀錄火焰**。問候卡下方固定一張連續紀錄卡（`recordStreakHTML()`）：
+   大火焰＋連續天數＋最近七天火焰格。連續天數沿用既有的 `calcStreak()`（任何一種紀錄都算
+   今天有來），並抽出 `recordDateSet()` 給卡片與火焰格共用；**順手修掉一個舊行為**——
+   `calcStreak()` 以前今天還沒記錄就把連續天數直接歸零，改成今天沒記錄時先從昨天起算
+   （Duolingo 也是撐到當天結束才算斷），數字整天穩定、今天一記錄就補回今天。獎勵沿用既有的
+   `SUMMON_PER_STREAK_DAYS`（連續紀錄滿 X 天換一次召喚機會），卡片顯示還差幾天，把「連續
+   天數 → 召喚獎勵」串成一條清楚的成就線。原本問候卡那行純文字 `🔥 連續紀錄 X 天` 收掉。
+
+3. **功能顯示設定**（`settings.tabsOff` + `NAV_TABS` + `applyTabVisibility()`）。設定分頁新增
+   「🧭 功能顯示」卡，讓使用者把用不到的底部分頁收起來（例如對宇宙新聞沒興趣就隱藏宇宙）。
+   首頁與設定是 `fixed: true` 永遠保留（一個是主畫面，一個是回來重新打開其他功能的入口）。
+   只隱藏底部按鈕，view 與程式內部跳轉不受影響。
+
+`APP_VERSION` → `2026.08.11`、`sw.js` 的 `CACHE` → `dreamtide-v25-2026.08.11`。
+驗證方式：本機起靜態伺服器用 headless Chromium（412px）跑過——首頁連續紀錄卡正確顯示連續
+3 天、七格中三格點亮、今天有金框、火焰點亮、獎勵文案正確；宇宙只剩四個子分頁；設定的功能
+顯示七項可勾（不含首頁／設定）；勾掉宇宙後底部分頁列即時少一顆、`tabsOff` 有寫進去；全程
+無 App 端 JS 錯誤。
+
+### Open / unfinished work
+`docs/crystal-vision.md` is a de facto product roadmap, with v1 marked shipped:
+- **v1.5 (next):** collection achievement badges, a shareable collection poster (canvas → PNG export), full-moon cleansing push notifications (reusing the existing `sw.js` notification pipeline).
+- **v2:** AI crystal recognition (Anthropic vision), a first "crystal academy" course, intent-tracking.
+- **v2.5:** a personalized "destiny crystal" report — **this is a cross-repo dependency on the ÆTHNOUS Engine** — plus a new/full-moon ritual-pack subscription and payments (LemonSqueezy or Stripe).
+- **v3:** physical print-on-demand posters, a curated affiliate store, internationalization/English version.
+- The doc also sketches a monetization tier table (Free / Stardust Plus ≈ NT$120–180/mo / one-off purchases NT$199–1,290) — not yet implemented.
+- No `TODO`/`FIXME` code markers exist — all planned work lives in the vision doc, not inline.
+
+### Gap to flag
+**This repo has no `CLAUDE.md`.** Every sibling repo in the network has one codifying at minimum a secrets rule and a personal-data-never-in-git rule; given this app stores real user mood/journaling data, that gap is worth closing soon — recommend writing one that at least covers: secrets handling, the "no real user data in git" rule (adapted from the birth-data rule elsewhere), and this app's architecture map, mirroring the pattern used in the other six repos.
+
+### Branches
+`main`, `claude/moon-altar-account-system-op2yvx` (altar backgrounds, meteor tuning, 星塵帳號,
+install button), `claude/stardust-fullmoon-article-translation-311edj` (星塵專欄創刊, true
+syzygy times, 站內通報 — see the 2026-07-28 entry above), and
+`claude/moon-phases-dynamic-feature-m7jb2y` (動態月相抽屜 — see the entry above), and
+`claude/settings-feature-toggle-streak-6oa79n` (移除測驗、首頁連續紀錄火焰、功能顯示設定 —
+see the 2026-08-11 entry above). The earliest branch,
+`claude/crystal-knowledge-collection-jcgq14`, is already merged via PR #1.
+
+---
+
+## 5. If you're an agent picking this up cold
+
+1. There's no `CLAUDE.md` here yet — this file and `docs/crystal-vision.md` are the closest things to ground rules and a roadmap until one exists.
+2. Check section 4 above for open work (the v1.5 roadmap items) before starting something new.
+3. If you materially change this repo's status (ship a v1.5 item, open a big feature branch, or — ideally — write the missing `CLAUDE.md`), update this file's section 4 and its "Compiled" date before you stop.
+4. Be extra careful with real user mood/journaling/dream data — treat it with the same never-in-git discipline the rest of the network applies to birth data.
