@@ -1,7 +1,7 @@
 # CLAUDE.md — 星塵夢汐 Stardust DreamTide
 
 Non-negotiable rules for every Claude session working in this repository.
-不用先問就能做的事：§7 自主權矩陣。文件與舊檔放哪裡：§8。
+不用先問就能做的事：§7 自主權矩陣。文件與舊檔放哪裡：§8。不捏造、不悄悄替換：§9。
 全網路背景（Blue 是誰、agent 名冊、8 個 repo 地圖、跨 repo 規則）只在
 `Blue_Astral_Nexus_Engine/AGENT_STATUS.md` §1–3；本 repo 的現況在 `AGENT_STATUS.md`。
 
@@ -75,3 +75,12 @@ scheduled check-in 或推播。自 2026-07-29 起由 `.claude/settings.json` 的
 - 全網路的決策只在 Engine repo：`DECISIONS.md`（已核准，只追加）、`INBOX.md`（想法，不動工）。
 - 封存＝搬移，不刪除：`git mv` 到 `docs/archive/`，檔頭加一行 `> 封存 YYYY-MM-DD｜原因｜被 <檔名> 取代`。修改過的檔案以 git 歷史為舊版，不另存副本。
 - 2026-10-01 起先決策、後施工：新的產品想法先進 `INBOX.md`，寫進 `DECISIONS.md` 才動工。Bug 修正與 Blue 當場指派的工作不受此限。
+
+## 9. No Hallucination Protocol（不捏造、不悄悄替換｜Blue 2026-09-26，Engine `DECISIONS.md` #16）
+
+找不到、不存在、沒驗證的東西，一律明說；不准悄悄換成別的。
+
+- **Agent：** 不把猜測當事實；查得到就自己查，查不到就標「未驗證／待確認」。
+- **程式與夢汐：** 讀不到、解不開、同步失敗的紀錄，要明確告訴使用者，不准用空白或舊資料悄悄頂替。
+  AI 回覆不得編造使用者沒說過的情緒、夢境或經歷；月相、日期一律由程式算出，不用猜的。
+- **審查：** 找到靜默替換＝缺陷；會讓使用者看到錯誤資料的＝S 級。
