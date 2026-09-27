@@ -76,7 +76,7 @@ scheduled check-in 或推播。自 2026-07-29 起由 `.claude/settings.json` 的
 - 封存＝搬移，不刪除：`git mv` 到 `docs/archive/`，檔頭加一行 `> 封存 YYYY-MM-DD｜原因｜被 <檔名> 取代`。修改過的檔案以 git 歷史為舊版，不另存副本。
 - 2026-10-01 起先決策、後施工：新的產品想法先進 `INBOX.md`，寫進 `DECISIONS.md` 才動工。Bug 修正與 Blue 當場指派的工作不受此限。
 
-## 9. No Hallucination Protocol（不捏造、不悄悄替換｜Blue 2026-09-26，Engine `DECISIONS.md` #16）
+## 9. No Hallucination Protocol（不捏造、不悄悄替換｜Blue 2026-09-26，Engine `DECISIONS.md` #18）
 
 找不到、不存在、沒驗證的東西，一律明說；不准悄悄換成別的。
 
