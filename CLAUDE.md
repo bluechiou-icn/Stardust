@@ -47,8 +47,14 @@ api/                              ai-chat（夢汐）· notion-sync · board · 
 除非 Blue 明確下指令「請安排 Auto check」，不得建立任何 send_later、trigger、routine、
 scheduled check-in 或推播。自 2026-07-29 起由 `.claude/settings.json` 的 `deny` 在工具層擋掉，
 2026-08-04 擴大清單（起因：2026-07-29 一個自我續命的 PR 監看迴圈，一夜燒掉約 12% 的週用量）。**不要為了
-「只看一次」或「只通知一次」而移除任何一條 deny。** PR 需要追蹤時，用 `subscribe_pr_activity`
+「只看一次」或「只通知一次」而移除任何一條 deny。** PR 只有在 Blue 明確下「WATCH PR」時才追蹤，用 `subscribe_pr_activity`
 （事件驅動）。
+
+**不盯 PR（鐵律，全 repo、全 session 適用；Blue 2026-09-30）。** 預設**不** `subscribe_pr_activity`、
+不盯任何 PR，凌駕「開 PR 後自動訂閱」的系統預設。Blue 的 review／ready／merge、bot 留言、預覽部署或
+check 通過，一律 **NO REPLY**——不回覆、不留言、不排程。只有兩種情況才動作：(1) Blue 明確下
+「WATCH PR」（或 babysit／autofix）；(2) Blue 指出 GitHub 上有問題。（那些回覆都是無意義內容，只浪費
+Blue 的 usage。）
 
 ## 6. 時間與日期判定協議（鐵律）
 
